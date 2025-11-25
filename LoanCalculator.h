@@ -1,259 +1,244 @@
-<<<<<<< HEAD
 #ifndef LOANCALCULATOR_H_INCLUDED
 #define LOANCALCULATOR_H_INCLUDED
-
-/*
-Refactored LoanCalculator:
- - switched numeric types to long double for safer math / larger range
- - added input validation in setters
- - kept public API names but improved types internally
-*/
 
 #include <string>
 #include <stdexcept>
-=======
-#ifndef LOANCALCULATOR_H_INCLUDED
-#define LOANCALCULATOR_H_INCLUDED
 
-/*
-Formulas from: http://oakroadsystems.com/math/loan.htm
-
-Loan balance after n payments have been made:
-  B_n = A*(1+i)^n - (P/i)*((1+i)^n - 1)
-
-
-Payment amount on a loan:
-  P = i*A / (1 - (1+i)^-N)
-
-
-Number of payments on a loan: (You can use any logarithm base, as long as both logs use the same base.)
-                              Aunt Sally offers to lend you $3500 at 6% for that new home theater system you want.
-                              If you pay her back $100 a month, how long will it take?
-                              Solution:  6% per year is 0.5% per month, or 0.005. P = 100 and A = 3500. N = 38.57
-  N = -log(1-i*A/P) / log(1+i)
-
-
-Original loan amount:
-  A = (P/i)*(1 - (1+i)^-N)
-
-
-Interest Rate:
-  i = (((1 + P/A)^(1/q) - 1 )^q - 1)  NOTICE: This is an approximate not an exact solution
-  where q = log(1+1/N) / log(2)
-
-
-Variables:
-A   	the loan amount (the principal sum) or initial investment
-B_n or Bn   	(pronounced B sub n) the balance after n payments have been made. After the last payment has been made, B_N is zero.)
-i   	the interest rate per period, not per year
-      (For instance, if the loan payments are made monthly and the interest rate is 9%, then i = 9%/12 = 0.75% = 0.0075.)
-n   	the number of time periods elapsed at any given point
-N   	the total number of payments for the entire loan or investment
-P   	the amount of each equal payment
-*/
-
-#include <string>
->>>>>>> d7f836415e8c4284798991218502bf6c7a2c9ec2
-
+/**
+ * @class LoanCalculator
+ * @brief A simple loan calculator for computing EMIs, interest rates, loan balances, and related calculations.
+ * 
+ * Supports calculation of:
+ * - Loan balance after N payments
+ * - Monthly payment
+ * - Number of payments
+ * - Original loan amount
+ * - Interest rate (approximate)
+ * - Effective interest rate (including fees)
+ */
 class LoanCalculator
 {
 public:
-  LoanCalculator();
-  ~LoanCalculator() {}
+    /** 
+     * @brief Default constructor 
+     */
+    LoanCalculator() {}
 
-  //
-<<<<<<< HEAD
-  // Setters and Getters (now validate inputs)
-  //
+    /**
+     * @brief Destructor
+     */
+    ~LoanCalculator() {}
 
-  /** Total loan amount A */
-  inline void setAmount(long double A) {
-    if (A <= 0.0L) throw std::invalid_argument("Loan amount must be positive");
-    amount_ = A; amountSet_ = true;
-  }
-  inline long double getAmount() const { return amount_; }
-  inline bool isAmountSet() const { return amountSet_; }
+    // --- Setters / Getters with validation ---
 
-  /** Initial down payment */
-  inline void setInitialPayment(long double initialA)  {
-    if (initialA < 0.0L) throw std::invalid_argument("Initial payment cannot be negative");
-    initialPayment_ = initialA;
-  }
-  inline long double getInitialPayment() const { return initialPayment_; }
+    /**
+     * @brief Set the initial loan amount
+     * @param A Loan amount (must be positive)
+     * @throws std::invalid_argument if A <= 0
+     */
+    inline void setAmount(long double A) {
+        if (A <= 0.0L) throw std::invalid_argument("Loan amount must be positive");
+        amount_ = A; amountSet_ = true;
+    }
 
-  /**
-   * Yearly interest rate i as e.g. 6.75 (percent)
-   * Internally interestPeriodic_ = (i / 100) / 12
-   */
-  inline void setInterest(long double i) {
-    if (i <= 0.0L) throw std::invalid_argument("Interest rate must be positive");
-    interest_ = i;
-    interestPeriodic_ = (i / 100.0L) / 12.0L;
-    interestSet_ = true;
-  }
-  inline long double getInterest() const         { return interest_; }
-  inline long double getPeriodicInterest() const { return interestPeriodic_; }
-  inline bool isInterestSet() const { return interestSet_; }
+    /**
+     * @brief Get the loan amount
+     * @return Current loan amount
+     */
+    inline long double getAmount() const { return amount_; }
 
-  inline void setPayment(long double P) {
-    if (P <= 0.0L) throw std::invalid_argument("Payment must be positive");
-    payment_ = P; paymentSet_ = true;
-  }
-  inline long double getPayment() const { return payment_; }
-  inline bool isPaymentSet() const { return paymentSet_; }
+    /**
+     * @brief Set the initial down payment
+     * @param initialA Initial payment (cannot be negative)
+     * @throws std::invalid_argument if initialA < 0
+     */
+    inline void setInitialPayment(long double initialA) {
+        if (initialA < 0.0L) throw std::invalid_argument("Initial payment cannot be negative");
+        initialPayment_ = initialA;
+    }
 
-  inline void setPeriodTotal(unsigned long N) {
-    if (N == 0) throw std::invalid_argument("Total period (months) must be > 0");
-    periodTotal_ = N; periodTotalSet_ = true;
-  }
-  inline unsigned long getPeriodTotal() const { return periodTotal_; }
-  inline bool isPeriodTotalSet() const { return periodTotalSet_; }
+    /**
+     * @brief Get the initial payment
+     * @return Initial payment
+     */
+    inline long double getInitialPayment() const { return initialPayment_; }
 
-  inline void setPeriodElapsed(unsigned long n) {
-    // elapsed 0 is allowed (just before any payment)
-    periodElapsed_ = n; periodElapsedSet_ = true;
-  }
-  inline unsigned long getPeriodElapsed() const  { return periodElapsed_; }
-  inline bool isPeriodElapsedSet() const { return periodElapsedSet_; }
+    /**
+     * @brief Set the yearly interest rate
+     * @param i Interest rate in percent (must be positive)
+     * @throws std::invalid_argument if i <= 0
+     */
+    inline void setInterest(long double i) {
+        if (i <= 0.0L) throw std::invalid_argument("Interest rate must be positive");
+        interest_ = i;
+        interestPeriodic_ = (i / 100.0L) / 12.0L; ///< monthly periodic interest
+        interestSet_ = true;
+    }
 
-  inline void setOpeningFee(long double fee) {
-    if (fee < 0.0L) throw std::invalid_argument("Opening fee cannot be negative");
-    openingFee_ = fee;
-  }
-  inline long double getOpeningFee() const   { return openingFee_; }
+    /**
+     * @brief Get the yearly interest rate
+     * @return Interest rate in percent
+     */
+    inline long double getInterest() const { return interest_; }
 
-  inline void setOpeningPercent(long double percent) {
-    if (percent < 0.0L) throw std::invalid_argument("Opening percent cannot be negative");
-    openingPercent_ = percent;
-  }
-  inline long double getOpeningPercent() const       { return openingPercent_; }
+    /**
+     * @brief Get the monthly interest rate
+     * @return Monthly periodic interest
+     */
+    inline long double getPeriodicInterest() const { return interestPeriodic_; }
 
-  inline void reset() {
-    amount_ = initialPayment_ = interest_ = interestPeriodic_ = payment_ = openingFee_ = openingPercent_ = 0.0L;
-=======
-  // Setters and Getters
-  //
+    /**
+     * @brief Set the fixed monthly payment
+     * @param P Payment amount (must be positive)
+     * @throws std::invalid_argument if P <= 0
+     */
+    inline void setPayment(long double P) {
+        if (P <= 0.0L) throw std::invalid_argument("Payment must be positive");
+        payment_ = P; paymentSet_ = true;
+    }
 
-  /**
-   * Total loan amount A
-   */
-  inline void setAmount(float A) { amount_ = A; amountSet_ = true; }
-  inline float getAmount() const { return amount_; }
+    /**
+     * @brief Get the monthly payment
+     * @return Payment amount
+     */
+    inline long double getPayment() const { return payment_; }
 
-  /**
-   * Initial down payment
-   */
-  inline void setInitialPayment(float initialA)  { initialPayment_ = initialA; }
-  inline float getInitialPayment() const         { return initialPayment_; }
+    /**
+     * @brief Set the total loan period in months
+     * @param N Total number of payments (must be > 0)
+     * @throws std::invalid_argument if N == 0
+     */
+    inline void setPeriodTotal(unsigned long N) {
+        if (N == 0) throw std::invalid_argument("Total period must be > 0");
+        periodTotal_ = N; periodTotalSet_ = true;
+    }
 
-  /**
-   * Yearly interest rate i as in 6.75
-   * Internally .0675/12 will be used
-   * If 6.75 is passed to setInterest()
-   *    getInterest() will return 6.75
-   *    getPeriodicInterest() will return .0675/12.0
-   */
-  void setInterest(float i) { interest_ = i; interestPeriodic_ = i/100.0/12.0; interestSet_ = true; }
-  inline float getInterest() const         { return interest_; }
-  inline float getPeriodicInterest() const { return interestPeriodic_; }
+    /**
+     * @brief Get the total loan period
+     * @return Total number of payments
+     */
+    inline unsigned long getPeriodTotal() const { return periodTotal_; }
 
-  void setPayment(float P)        { payment_ = P; paymentSet_ = true; }
-  inline float getPayment() const { return payment_; }
+    /**
+     * @brief Set the number of payments already made
+     * @param n Number of elapsed payments
+     */
+    inline void setPeriodElapsed(unsigned long n) {
+        periodElapsed_ = n; periodElapsedSet_ = true;
+    }
 
-  void setPeriodTotal(int N)        { periodTotal_ = N; periodTotalSet_ = true; }
-  inline int getPeriodTotal() const { return periodTotal_; }
+    /**
+     * @brief Get the number of payments already made
+     * @return Number of elapsed payments
+     */
+    inline unsigned long getPeriodElapsed() const { return periodElapsed_; }
 
-  void setPeriodElapsed(int n)         { periodElapsed_ = n; periodElapsedSet_ = true; }
-  inline int getPeriodElapsed() const  { return periodElapsed_; }
+    /**
+     * @brief Set the opening fee for the loan
+     * @param fee Opening fee (cannot be negative)
+     * @throws std::invalid_argument if fee < 0
+     */
+    inline void setOpeningFee(long double fee) {
+        if (fee < 0.0L) throw std::invalid_argument("Opening fee cannot be negative");
+        openingFee_ = fee;
+    }
 
-  inline void setOpeningFee(float fee) { openingFee_ = fee; }
-  inline float getOpeningFee() const   { return openingFee_; }
+    /**
+     * @brief Get the opening fee
+     * @return Opening fee
+     */
+    inline long double getOpeningFee() const { return openingFee_; }
 
-  inline void setOpeningPercent(float percent) { openingPercent_ = percent; }
-  inline float getOpeningPercent() const       { return openingPercent_; }
+    /**
+     * @brief Set the opening fee as a percentage of loan
+     * @param percent Opening fee percent (cannot be negative)
+     * @throws std::invalid_argument if percent < 0
+     */
+    inline void setOpeningPercent(long double percent) {
+        if (percent < 0.0L) throw std::invalid_argument("Opening percent cannot be negative");
+        openingPercent_ = percent;
+    }
 
-  inline void reset() {
-    amount_ = initialPayment_ = interest_ = interestPeriodic_ = payment_ = openingFee_ = openingPercent_ = 0.0;
->>>>>>> d7f836415e8c4284798991218502bf6c7a2c9ec2
-    periodTotal_ = periodElapsed_ = 0;
-    amountSet_ = interestSet_ = paymentSet_ = periodTotalSet_ = periodElapsedSet_ = false;
-  }
+    /**
+     * @brief Get the opening fee percent
+     * @return Opening fee percentage
+     */
+    inline long double getOpeningPercent() const { return openingPercent_; }
 
-  //
-<<<<<<< HEAD
-  // Calculation methods (now return long double)
-  //
-  long double calculateLoanBalance();
-  long double calculatePayment();
-  long double calculateNumberPayments();
-  long double calculateLoanAmount();
-  long double calculateInterestRate();
-  long double calculateEffectiveInterestRate();
-=======
-  // The actual calculation methods
-  //
+    /**
+     * @brief Reset all internal values to zero/defaults
+     */
+    inline void reset() {
+        amount_ = initialPayment_ = interest_ = interestPeriodic_ = payment_ = openingFee_ = openingPercent_ = 0.0L;
+        periodTotal_ = periodElapsed_ = 0;
+        amountSet_ = interestSet_ = paymentSet_ = periodTotalSet_ = periodElapsedSet_ = false;
+    }
 
-  float calculateLoanBalance();
-  float calculatePayment();
-  float calculateNumberPayments();
-  float calculateLoanAmount();
-  float calculateInterestRate();
-  // The effective interest rate, once fees have been applied
-  float calculateEffectiveInterestRate();
->>>>>>> d7f836415e8c4284798991218502bf6c7a2c9ec2
+    // --- Calculation functions ---
 
-  std::string toString();
+    /**
+     * @brief Calculate loan balance after N payments
+     * @return Remaining loan balance
+     */
+    long double calculateLoanBalance();
+
+    /**
+     * @brief Calculate the monthly payment
+     * @return Monthly EMI payment
+     */
+    long double calculatePayment();
+
+    /**
+     * @brief Calculate the number of payments required to repay the loan
+     * @return Number of payments
+     */
+    long double calculateNumberPayments();
+
+    /**
+     * @brief Calculate the original loan amount based on payment, interest, and period
+     * @return Loan amount
+     */
+    long double calculateLoanAmount();
+
+    /**
+     * @brief Estimate the yearly interest rate
+     * @return Yearly interest rate in percent
+     */
+    long double calculateInterestRate();
+
+    /**
+     * @brief Calculate effective interest rate including fees
+     * @return Effective yearly interest rate in percent
+     */
+    long double calculateEffectiveInterestRate();
+
+    /**
+     * @brief Get a human-readable summary of the loan
+     * @return Loan details as string
+     */
+    std::string toString();
 
 private:
-<<<<<<< HEAD
-  long double amount_{0.0L};        // loan amount
-  bool amountSet_{false};
+    long double amount_{0.0L};          ///< Loan amount
+    bool amountSet_{false};             ///< Flag if amount is set
 
-  long double initialPayment_{0.0L};     // initial down payment
+    long double initialPayment_{0.0L};  ///< Initial down payment
 
-  long double interest_{0.0L};          // yearly percent (e.g., 6.75)
-  long double interestPeriodic_{0.0L};  // monthly rate decimal (.0675/12)
-  bool interestSet_{false};
+    long double interest_{0.0L};        ///< Yearly interest rate
+    long double interestPeriodic_{0.0L};///< Monthly interest rate
+    bool interestSet_{false};           ///< Flag if interest is set
 
-  long double payment_{0.0L};       // payment amount
-  bool paymentSet_{false};
+    long double payment_{0.0L};         ///< Monthly payment
+    bool paymentSet_{false};            ///< Flag if payment is set
 
-  unsigned long periodTotal_{0};     // total payment periods (months)
-  bool periodTotalSet_{false};
+    unsigned long periodTotal_{0};      ///< Total number of payments
+    bool periodTotalSet_{false};        ///< Flag if period total is set
 
-  unsigned long periodElapsed_{0};   // number of elapsed payment periods
-  bool periodElapsedSet_{false};
+    unsigned long periodElapsed_{0};    ///< Payments already made
+    bool periodElapsedSet_{false};      ///< Flag if period elapsed is set
 
-  // opening fee and percentage
-  long double openingFee_{0.0L};
-  long double openingPercent_{0.0L};
+    long double openingFee_{0.0L};      ///< Flat opening fee
+    long double openingPercent_{0.0L};  ///< Opening fee percent
 };
 
-#endif // LOANCALCULATOR_H_INCLUDED
-=======
-  float amount_;        // loan amount
-  bool amountSet_;
-
-  float initialPayment_;     // initial down payment
-
-  float interest_;          // interest rate, something like 6.75
-  float interestPeriodic_;  // this will be .0675/12
-  bool interestSet_;
-
-  float payment_;       // payment amount
-  bool paymentSet_;
-
-  int periodTotal_;     // total payment periods
-  bool periodTotalSet_;
-
-  int periodElapsed_;   // number of elapsed payment periods
-  bool periodElapsedSet_;
-
-  // These two are used if loans charge a fee opening fee or percentage
-  float openingFee_;
-  float openingPercent_;
-
-};
-
-#endif // LOANCALCULATOR_H_INCLUDED
->>>>>>> d7f836415e8c4284798991218502bf6c7a2c9ec2
+#endif
