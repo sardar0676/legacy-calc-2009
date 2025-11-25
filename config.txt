@@ -1,0 +1,7 @@
+# config.txt - default values
+default_amount = 100000
+default_interest = 12.0
+default_period_months = 360
+default_initial_payment = 0.0
+default_opening_fee = 0.0
+default_opening_percent = 0.0
