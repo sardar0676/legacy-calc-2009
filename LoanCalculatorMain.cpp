@@ -124,6 +124,7 @@ int main(int argc, char **argv)
 {
   LoanCalculator calculator;
 
+<<<<<<< HEAD
   auto cfg = readConfig("config.txt");
   try {
     if (cfg.count("default_amount")) {
@@ -150,6 +151,8 @@ int main(int argc, char **argv)
     std::cerr << "Error loading config: " << e.what() << "\n";
   }
 
+=======
+>>>>>>> d7f836415e8c4284798991218502bf6c7a2c9ec2
   // If no arguments are given, then launch the GUI
   if(argc == 1)
   {
