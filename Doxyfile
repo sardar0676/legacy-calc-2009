@@ -1,0 +1,18 @@
+PROJECT_NAME           = "LoanCalculator"
+PROJECT_BRIEF          = "A simple loan calculator for EMI, interest rate, and loan balance calculations"
+
+INPUT                  = ./          # Your project folder
+FILE_PATTERNS          = *.h *.cpp
+RECURSIVE              = YES
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+
+GENERATE_LATEX         = NO      # Disable LaTeX if you don't need PDF
+
+EXTRACT_ALL            = YES     # Extract docs even if no Doxygen comment exists
+EXTRACT_PRIVATE        = YES     # Include private members
+
+HAVE_DOT               = YES     # For class diagrams
+DOT_IMAGE_FORMAT       = png
+CLASS_DIAGRAMS         = YES
